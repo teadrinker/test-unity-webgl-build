@@ -11,38 +11,47 @@ public class LoadSceneRemotely : MonoBehaviour
     private string ForceNoCache() { return "?id=" + Random.Range(1000000, 9999999);  } 
     IEnumerator Start()
     {
-        //var baseURLf = "C:\\_UnityProj\\Bundletest\\build_bundles\\Windows\\";
-        //var resources = AssetBundle.LoadFromFile(baseURLf + url);
-        //var scene = AssetBundle.LoadFromFile(baseURLf + url +"s");
-
-        var request = UnityEngine.Networking.UnityWebRequestAssetBundle.GetAssetBundle(baseURL + scene_name + ".bundle" + ForceNoCache());
-        yield return request.SendWebRequest();        
-        
-        /*
-        //var request = UnityEngine.Networking.UnityWebRequest.Get(baseURL + url + ForceNoCache());
-        yield return request.SendWebRequest();
-        var data = request.downloadHandler.data;
-        Debug.Log(baseURL + url + " " + data.Length);
-
-        var dataf = System.IO.File.ReadAllBytes(baseURLf + url);
-        Debug.Log(baseURLf + url + " " + dataf.Length);
-        */
-        //var resources = AssetBundle.LoadFromMemoryAsync(request.downloadHandler.data);
-
-        
-        var resources = UnityEngine.Networking.DownloadHandlerAssetBundle.GetContent(request);
-        var request2 = UnityEngine.Networking.UnityWebRequestAssetBundle.GetAssetBundle(baseURL + scene_name + "_s.bundle" + ForceNoCache());
-        yield return request2.SendWebRequest();
-        var scene = UnityEngine.Networking.DownloadHandlerAssetBundle.GetContent(request2);
-        if (scene.isStreamedSceneAssetBundle)
+        if(SceneUtility.GetBuildIndexByScenePath("Assets/bundle_" + scene_name + "/" + scene_name + ".unity") != -1) // note: SceneManager.GetScene...().buildIndex DONT WORK, always return -1!
         {
-            string[] scenePaths = scene.GetAllScenePaths();
-            string sceneName = System.IO.Path.GetFileNameWithoutExtension(scenePaths[0]);
-            SceneManager.LoadSceneAsync(sceneName, LoadSceneMode.Additive);
-        }
-        
-        //AsyncOperationHandle<SceneInstance> handle1 = Addressables.LoadSceneAsync(url, LoadSceneMode.Additive, true);
+            // local override:
+            SceneManager.LoadSceneAsync(scene_name, LoadSceneMode.Additive);
+		}
+        else
+		{
 
-        yield return null; 
+            //var baseURLf = "C:\\_UnityProj\\Bundletest\\build_bundles\\Windows\\";
+            //var resources = AssetBundle.LoadFromFile(baseURLf + url);
+            //var scene = AssetBundle.LoadFromFile(baseURLf + url +"s");
+
+            var request = UnityEngine.Networking.UnityWebRequestAssetBundle.GetAssetBundle(baseURL + scene_name + ".bundle" + ForceNoCache());
+            yield return request.SendWebRequest();        
+        
+            /*
+            //var request = UnityEngine.Networking.UnityWebRequest.Get(baseURL + url + ForceNoCache());
+            yield return request.SendWebRequest();
+            var data = request.downloadHandler.data;
+            Debug.Log(baseURL + url + " " + data.Length);
+
+            var dataf = System.IO.File.ReadAllBytes(baseURLf + url);
+            Debug.Log(baseURLf + url + " " + dataf.Length);
+            */
+            //var resources = AssetBundle.LoadFromMemoryAsync(request.downloadHandler.data);
+
+        
+            var resources = UnityEngine.Networking.DownloadHandlerAssetBundle.GetContent(request);
+            var request2 = UnityEngine.Networking.UnityWebRequestAssetBundle.GetAssetBundle(baseURL + scene_name + "_s.bundle" + ForceNoCache());
+            yield return request2.SendWebRequest();
+            var scene = UnityEngine.Networking.DownloadHandlerAssetBundle.GetContent(request2);
+            if (scene.isStreamedSceneAssetBundle)
+            {
+                string[] scenePaths = scene.GetAllScenePaths();
+                string sceneName = System.IO.Path.GetFileNameWithoutExtension(scenePaths[0]);
+                SceneManager.LoadSceneAsync(sceneName, LoadSceneMode.Additive);
+            }
+        
+            //AsyncOperationHandle<SceneInstance> handle1 = Addressables.LoadSceneAsync(url, LoadSceneMode.Additive, true);
+
+            yield return null; 
+		}
     }
 }
